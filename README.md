@@ -1,152 +1,59 @@
-# SMS Gateway
+Self-Hosted Web-Based SMS Sending System 📱💬
+A self-hosted, web-based SMS Gateway application that turns any Android smartphone into a programmable SMS transmitter. This system offers a cost-effective alternative to paid SMS APIs by bridging a web control panel on a PC directly to a phone's SIM card over a local Wi-Fi network.
 
-A self-hosted, web-based SMS sending system. Send and manage SMS messages through a simple dashboard, backed by your own server and GSM modem or SMS provider — no third-party SaaS required.
+It supports two modes of operation:
 
-## Features
-
-- 📲 **Web dashboard** — send single or bulk SMS messages from your browser
-- 🔌 **Pluggable backends** — connect a GSM modem/USB dongle or an HTTP-based SMS provider
-- 📇 **Contact & group management** — organize recipients into groups for bulk sends
-- 📜 **Message history & delivery status** — track sent, pending, and failed messages
-- 🔐 **Self-hosted & private** — your data never leaves your own infrastructure
-- 🔑 **REST API** — send messages programmatically from other apps/scripts
-- 🧾 **Message templates** — reusable templates with variable placeholders
-- ⏱️ **Scheduled sending** — queue messages to go out at a later time
-
-## Requirements
-
-- Node.js 18+ (or specify your actual runtime, e.g. Python 3.10+ / PHP 8+)
-- A database (SQLite by default, MySQL/PostgreSQL supported)
-- One of:
-  - A GSM modem / USB 3G/4G dongle with SIM card, or
-  - An account with an SMS gateway provider (e.g. Twilio, Vonage, etc.)
-
-## Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/<your-username>/sms-gateway.git
-cd sms-gateway
-
-# Install dependencies
-npm install
-
-# Copy and configure environment variables
-cp .env.example .env
-```
-
-Edit `.env` with your configuration:
-
-```env
-PORT=3000
-DATABASE_URL=sqlite:./data/sms-gateway.db
-
-# Choose your SMS backend: "modem" or "provider"
-SMS_BACKEND=modem
-
-# If using a GSM modem
-MODEM_PORT=/dev/ttyUSB0
-MODEM_BAUD_RATE=115200
-
-# If using an SMS provider instead
-# SMS_PROVIDER_API_KEY=your_api_key
-# SMS_PROVIDER_API_SECRET=your_api_secret
-
-# Dashboard auth
-ADMIN_USERNAME=admin
-ADMIN_PASSWORD=change_me
-JWT_SECRET=replace_with_a_long_random_string
-```
-
-## Usage
-
-Start the server:
-
-```bash
-npm start
-```
-
-Then open `http://localhost:3000` in your browser and log in with your admin credentials.
-
-### Sending via the dashboard
-
-1. Go to **Compose**
-2. Enter a recipient number or select a contact group
-3. Write your message (or pick a template)
-4. Click **Send**
-
-### Sending via the API
-
-```bash
-curl -X POST http://localhost:3000/api/messages \
-  -H "Authorization: Bearer <your_api_token>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "+15551234567",
-    "message": "Hello from SMS Gateway!"
-  }'
-```
-
-Example response:
-
-```json
-{
-  "id": "msg_abc123",
-  "status": "queued",
-  "to": "+15551234567",
-  "createdAt": "2026-07-18T09:00:00Z"
-}
-```
-
-## Running with Docker
-
-```bash
-docker compose up -d
-```
-
-This will start the web app and (if configured) a database container. Ensure your modem device is passed through in `docker-compose.yml` if using `SMS_BACKEND=modem`:
-
-```yaml
-devices:
-  - "/dev/ttyUSB0:/dev/ttyUSB0"
-```
-
-## Project Structure
-
-```
-sms-gateway/
-├── src/
-│   ├── api/          # REST API routes
-│   ├── dashboard/    # Web UI
-│   ├── backends/     # Modem / provider integrations
-│   ├── models/       # Database models
-│   └── queue/        # Message queue & scheduler
-├── data/              # SQLite DB / persistent data
-├── .env.example
-├── docker-compose.yml
-└── package.json
-```
-
-## Roadmap
-
-- [ ] Two-way SMS (receive inbound messages)
-- [ ] Webhooks for delivery status updates
-- [ ] Multi-user roles & permissions
-- [ ] SMPP support for carrier-grade sending
-
-## Contributing
-
-Contributions are welcome! Please open an issue to discuss significant changes before submitting a pull request.
-
-1. Fork the repo
-2. Create a feature branch (`git checkout -b feature/my-feature`)
-3. Commit your changes
-4. Open a pull request
-
-## License
-
-This project is licensed under the [MIT License](LICENSE).
-
-## Disclaimer
-
-This project is intended for legitimate personal, business, or notification use cases. You are responsible for complying with local telecommunications regulations and anti-spam laws (e.g. TCPA, GDPR) in the jurisdictions where you send messages.
+Direct HTTP Server Mode: Interacts directly with the "Simple SMS Gateway" app running a web server on the phone.
+Termux:API Client Mode: Runs a lightweight background daemon on the Android device via Termux to poll the server for pending SMS and send them via termux-sms-send.
+🚀 Key Features
+Django Web Dashboard: Modern, intuitive web dashboard to send messages, manage logs, monitor transmission states, and view details/errors.
+Dual-Integration Support:
+Simple SMS Gateway App: Instantly connect to the Android app hosting a local web server at http://<phone-ip>:8080 over Wi-Fi (No cables or terminal setups required).
+Termux Daemon (sms_gateway.py): Periodically polls the server's API (/api/pending-sms/) using an API key and dispatches them locally using termux-sms-send.
+Robust Status Tracking: Logs message status values (Pending, Sending, Sent, Failed) with error capturing, sending times, and transmission retry attempts.
+API Security: Secure communication between the client daemon and the server via custom header API keys (X-API-Key).
+🛠️ Technology Stack
+Server/Backend: Python (Django Web Framework)
+Client Daemon: Python, curl, Termux + Termux:API (for Android side)
+Database: SQLite
+Frontend: HTML5, CSS3, JavaScript
+⚙️ Setup & Installation
+Server Setup (PC / Server)
+Activate Virtual Environment:
+cd E:\djangoproject\messenger
+.\venv\Scripts\Activate.ps1
+Install Dependencies:
+pip install -r requirements.txt
+Configure Settings: Open config/settings.py and set your preferred SMS_GATEWAY_URL or configuration key.
+Run Migrations:
+python manage.py migrate
+Run Development Server:
+python manage.py runserver 0.0.0.0:8000
+(Note: Binding to 0.0.0.0 ensures the server is reachable by the Android device on the same local network).
+📲 Client Configuration (Android Device)
+Option A: Using the "Simple SMS Gateway" App
+Install Simple SMS Gateway (or equivalent local gateway app) on your Android device.
+Turn on the server inside the app (ensure it is green/running).
+Ensure both the Android device and your PC are connected to the same Wi-Fi network.
+Configure the server IP and port (e.g., http://<phone-ip>:8080) in the Django admin dashboard or settings.py.
+Option B: Using Termux (Advanced Command Line Client)
+Install Termux and the Termux:API app on your Android device.
+Open Termux and run the following setup commands:
+pkg update && pkg upgrade
+pkg install termux-api python
+Copy android_gateway/sms_gateway.py to your phone.
+Open the script and edit configuration variables:
+SERVER_URL = "http://<YOUR_PC_IP>:8000"
+API_KEY = "your-secret-key-change-this-2024"
+POLL_INTERVAL = 10
+Run the background daemon script in Termux:
+python sms_gateway.py
+📊 Database Schema Details
+SMS: Keeps record of each SMS transaction:
+sender_number: Number of the originator.
+receiver_number: Destination phone number.
+message: Text message content.
+status: Current status (Pending, Sending, Sent, Failed).
+attempts: Number of retry attempts.
+error_message: Logs exceptions or network failures.
+sent_at: Timestamp showing when it was successfully delivered.
